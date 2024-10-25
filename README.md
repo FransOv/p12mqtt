@@ -2,7 +2,7 @@
 A Tasmota Berry program to publish the energy parameters obtained via the P1 port of the utility meter to MQTT
 
 
-This is a small program that reads the output of the P1 port of the utility meter (DSMTR 5.0 standard) and publishes selected values on the local area net.
+This is a small program that reads the output of the P1 port of the utility meter (DSMR 5.0 standard) and publishes selected values on the local area net.
 
 Which elements should be mapped to which prameters in the JSON published via MQTT is determined by the mapping in the codes variable. The example uses this mapping:
 ```json
