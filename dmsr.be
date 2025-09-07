@@ -42,14 +42,14 @@ def every_second()
  import mqtt
  import math
  import string
-# if (self.codes.size()==self.mqttmap.size())
+ if (self.codes.size()==self.mqttmap.size())
   if (self.enrg_imp==0) self.enrg_imp=self.mqttmap["enrg_imp_t1"]+self.mqttmap["enrg_imp_t2"] end
   if (self.enrg_exp==0) self.enrg_exp=self.mqttmap["enrg_exp_t1"]+self.mqttmap["enrg_exp_t2"] end
   if (math.abs((self.mqttmap["enrg_imp_t1"]+self.mqttmap["enrg_imp_t2"])-self.enrg_imp)<1 && math.abs((self.mqttmap["enrg_exp_t1"]+self.mqttmap["enrg_exp_t2"])-self.enrg_exp)<1)
    mqtt.publish(self.topic, string.tr(str(self.mqttmap),"'",'"'))
    self.pwr=(self.mqttmap["pwr_exp"]-self.mqttmap["pwr_imp"])
   end
-# end
+ end
 
 end #every_second
 
@@ -64,3 +64,4 @@ end #DSMR
 
 var dsmr=DSMR()
 tasmota.add_driver(dsmr)
+
