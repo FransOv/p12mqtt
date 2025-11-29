@@ -1,29 +1,49 @@
 class DSMR
-var codes
-var topic
+static var codes={'1-0:1.8.1':'enrg_imp_t1','1-0:1.8.2':'enrg_imp_t2','1-0:2.8.1':'enrg_exp_t1','1-0:2.8.2':'enrg_exp_t2','0-0:96.14.0':'tariff','1-0:1.7.0':'pwr_imp','1-0:2.7.0':'pwr_exp','1-0:32.7.0':'volts_l1','1-0:52.7.0':'volts_l2','1-0:72.7.0':'volts_l3','1-0:31.7.0':'amps_l1','1-0:51.7.0':'amps_l2','1-0:71.7.0':'amps_l3','1-0:21.7.0':'l1_pwr_imp','1-0:41.7.0':'l2_pwr_imp','1-0:61.7.0':'l3_pwr_imp','1-0:22.7.0':'l1_pwr_exp','1-0:42.7.0':'l2_pwr_exp','1-0:62.7.0':'l3_pwr_exp'}
+
+var serialbuf
+var ser
+var mqttmap
 var enrg_imp
 var enrg_exp
 var pwr
-var mqttmap
+var topic
 
 def init()
- self.codes={'1-0:1.8.1':'enrg_imp_t1','1-0:1.8.2':'enrg_imp_t2','1-0:2.8.1':'enrg_exp_t1','1-0:2.8.2':'enrg_exp_t2','0-0:96.14.0':'tariff','1-0:1.7.0':'pwr_imp','1-0:2.7.0':'pwr_exp','1-0:32.7.0':'volts_l1','1-0:52.7.0':'volts_l2','1-0:72.7.0':'volts_l3','1-0:31.7.0':'amps_l1','1-0:51.7.0':'amps_l2','1-0:71.7.0':'amps_l3','1-0:21.7.0':'l1_pwr_imp','1-0:41.7.0':'l2_pwr_imp','1-0:61.7.0':'l3_pwr_imp','1-0:22.7.0':'l1_pwr_exp','1-0:42.7.0':'l2_pwr_exp','1-0:62.7.0':'l3_pwr_exp'}
+ tasmota.set_power(0,false)
+ self.serialbuf=""
+ self.ser=serial(20,-1,115200,serial.SERIAL_8N1)
+ self.ser.flush()
+ tasmota.set_power(0,true)
  self.mqttmap=map()
- self.mqttmap.insert("volts_l1",230)
- self.mqttmap.insert("volts_l2",230)
- self.mqttmap.insert("volts_l3",230)
  self.topic='tele/'+tasmota.cmd('topic')['Topic']+'/DSMR5'
  self.enrg_imp=0
  self.enrg_exp=0
  self.pwr=1
- tasmota.cmd("serialdelimiter 10")
- tasmota.remove_rule("SerialReceived")
- tasmota.add_rule("SerialReceived",/v,t,p -> self.decode(v,t,p))
 end #init
 
-def decode(value, trigger, payload)
+def every_50ms()
  import string
+ if self.ser.available()>0
+  self.serialbuf+=self.ser.read().asstring()
+  var newline=string.find(self.serialbuf,"\n")
+  while newline!=-1
+   var datagram=self.serialbuf[0..newline]
+   if size(self.serialbuf)>newline
+    self.serialbuf=self.serialbuf[newline+1..]
+   else
+    self.serialbuf=""
+   end
+   self.decode(datagram)
+   newline=string.find(self.serialbuf,"\n")
+  end
+ end
 
+end #every_50ms
+
+def decode(value)
+ import string
+# print(value)
  var item=string.split(value,'(',1)
  var key=self.codes.find(item[0])
  if key!=nil
@@ -43,6 +63,7 @@ def every_second()
  import math
  import string
  if (self.codes.size()==self.mqttmap.size())
+  global.dataValid=true
   if (self.enrg_imp==0) self.enrg_imp=self.mqttmap["enrg_imp_t1"]+self.mqttmap["enrg_imp_t2"] end
   if (self.enrg_exp==0) self.enrg_exp=self.mqttmap["enrg_exp_t1"]+self.mqttmap["enrg_exp_t2"] end
   if (math.abs((self.mqttmap["enrg_imp_t1"]+self.mqttmap["enrg_imp_t2"])-self.enrg_imp)<10 && math.abs((self.mqttmap["enrg_exp_t1"]+self.mqttmap["enrg_exp_t2"])-self.enrg_exp)<10)
