@@ -12,5 +12,4 @@ The smart meter is connected to the ESP like this:
 ![image](https://github.com/user-attachments/assets/311d01e6-4341-4189-ad29-db6fb3885679)
 The P1 port is activated after boot by a 3.3V signal from GPIO 6 to the RTS pin of the P1 port. This can be done by a rule on system#boot after initialisation of the serial port of the esp (as in my case) but could also be done by the init function of the program.
 
-If you use the Lolin C3 mini Version 2 with the WS2812 on GPIO7 you can also get a quick indication of power used (red) or produced (green) with the brightness a measure of the amount of power.
-
+There were some problems with the previous version of this program. My utility meter, Sagemcom T211, had a datagram that keeps track of all outages. Over the last three years we have had three outages wich caused this datagram to be very long. Using SerialReceived rule in Berry coculd not keep up with that and this caused the datagrams following this error memeory where quite often lost. I therfore changes the progrma from using SerialRecieved rule to using the Serial class in Berry.
