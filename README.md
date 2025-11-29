@@ -13,3 +13,5 @@ The smart meter is connected to the ESP like this:
 The P1 port is activated after boot by a 3.3V signal from GPIO 6 to the RTS pin of the P1 port. This can be done by a rule on system#boot after initialisation of the serial port of the esp (as in my case) but could also be done by the init function of the program.
 
 There were some problems with the previous version of this program. My utility meter, Sagemcom T211, had a datagram that keeps track of all outages. Over the last three years we have had three outages wich caused this datagram to be very long. Using SerialReceived rule in Berry coculd not keep up with that and this caused the datagrams following this error memeory where quite often lost. I therfore changes the progrma from using SerialRecieved rule to using the Serial class in Berry.
+
+Added the emeter emulation to run on the same esp32 as the dsmr P1 reader.
