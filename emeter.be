@@ -5,6 +5,7 @@ var udpSocket
 var emHeader 
 var emId
 var serial
+var watchdog
 
 var twosec
 
@@ -86,6 +87,7 @@ def init()
  self.udpSocket=udp()
  self.udpSocket.begin_multicast("239.12.255.254",9522)
  self.twosec=true
+ self.watchdog=60
 end # init
 
 def num2bytes(value,length) # only positive numbers length 1, 2, 4 or 8
@@ -107,6 +109,8 @@ end # num2bytes
 def every_second()
 import mqtt 
 if global.dataValid
+
+
  for val : self.values
   var v=dsmr.mqttmap.find(val[0])
   if v != nil
@@ -178,7 +182,7 @@ if global.dataValid
  end
  global.pwr=dsmr.mqttmap["pwr_exp"]-dsmr.mqttmap["pwr_imp"]
 
- self.twosec=!self.twosec
+ #self.twosec=!self.twosec
  if self.twosec 
   self.emId.set(6,int(tasmota.rtc("local")*1000),-4)
   var dg=self.emHeader+self.emId
@@ -194,7 +198,12 @@ if global.dataValid
   self.udpSocket.send_multicast(dg)
   while self.udpSocket.read() != nil end
  end
- mqtt.publish ("emeter/active","yes")
+ if self.watchdog==60
+  self.watchdog=0
+  mqtt.publish ("emeter/active","yes")
+ else
+  self.watchdog+=1
+ end
 end
 
 end # every_second
